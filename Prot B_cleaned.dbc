@@ -1,0 +1,130 @@
+VERSION "ELEC_CAN"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: ABS BCMA CCF_Server INV INVA INVB INVD PCM PCMB TCM TSTR Virtual_EVAC
+
+
+BO_ 2147483649 New_Message_114: 8 Vector__XXX
+ SG_ New_Signal_3392 : 328|8@1+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 2147483648 New_Message_113: 8 Vector__XXX
+ SG_ New_Signal_3391 : 128|8@1+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 496 BCMB_PR17_Rio_GW_EC: 64 BCMA
+ SG_ ACSuctionPressure : 247|12@0+ (1,0) [0|3500] "kPa"  ABS
+ SG_ CabinInCarHumidity : 214|7@0+ (1,0) [0|100] "%"  ABS
+ SG_ CabinZone1Power : 191|11@0+ (10,-10000) [-10000|10000] "W"  ABS
+ SG_ CabinZone1TempAvg : 7|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone1TempSetPoint : 55|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone2Power : 196|11@0+ (10,-10000) [-10000|10000] "W"  ABS
+ SG_ CabinZone2TempAvg : 15|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone2TempSetPoint : 63|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone3Power : 364|11@0+ (10,-10000) [-10000|10000] "W"  ABS
+ SG_ CabinZone3TempAvg : 23|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone3TempSetPoint : 71|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone4Power : 223|11@0+ (10,-10000) [-10000|10000] "W"  ABS
+ SG_ CabinZone4TempAvg : 31|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone4TempSetPoint : 79|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone5Power : 228|11@0+ (10,-10000) [-10000|10000] "W"  ABS
+ SG_ CabinZone5TempAvg : 39|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone5TempSetPoint : 87|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone6Power : 359|11@0+ (10,-10000) [-10000|10000] "W"  ABS
+ SG_ CabinZone6TempAvg : 47|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CabinZone6TempSetPoint : 95|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CbnAuxAutoBlowerLevel : 342|7@0+ (1,0) [0|100] "%"  ABS
+ SG_ CbnAuxBlowerAirFlow : 350|7@0+ (1,0) [0|127] "L/s"  ABS
+ SG_ CbnFrntAutoBlowerLevel : 334|7@0+ (1,0) [0|100] "%"  ABS
+ SG_ CbnFrntBlowerAirFlow : 183|8@0+ (1,0) [0|255] "L/s"  ABS
+ SG_ CbnRecircDoorPos : 326|7@0+ (1,0) [0|100] "%"  ABS
+ SG_ CbnZn1AirOffTempTgt : 103|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CbnZn2AirOffTempTgt : 111|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CbnZn3AirOffTempTgt : 119|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CbnZn4AirOffTempTgt : 127|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CbnZn5AirOffTempTgt : 135|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ CbnZn6AirOffTempTgt : 143|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ ChlrClntFlowRateReq : 318|7@0+ (1,0) [0|100] "%"  ABS
+ SG_ ChlrClntInletTempReq : 175|8@0+ (1,-40) [-40|214] "degC"  ABS
+ SG_ ChlrRefrgOutletTemp : 288|11@0+ (0.1,-40) [-40|150] "Deg C"  ABS
+ SG_ eACActualSpeed : 167|8@0+ (50,0) [0|12000] "RPM"  ABS
+ SG_ eACPowerUseActual : 159|8@0+ (0.1,0) [0|25.4] "kW"  ABS
+ SG_ EvapInletAirTemp : 151|8@0+ (0.5,-57) [-57|70.5] "Deg C"  ABS
+ SG_ HVACRangePredValid : 279|1@0+ (1,0) [0|1] ""  ABS
+ SG_ HVCHClntInletTemp : 251|11@0+ (0.1,-40) [-40|164.6] "DegC"  ABS
+ SG_ HVCHClntOutletTemp : 278|11@0+ (0.1,-40) [-40|164.6] "DegC"  ABS
+ SG_ HVCHCoolantStatus : 369|2@0+ (1,0) [0|3] ""  ABS
+ SG_ HVCHStatus : 380|3@0+ (1,0) [0|7] ""  ABS
+ SG_ HVCHVariant : 377|2@0+ (1,0) [0|3] ""  ABS
+ SG_ OHXOprModeStatus : 201|2@0+ (1,0) [0|3] ""  ABS
+ SG_ OHXRefrgOutletTemp : 283|11@0+ (0.1,-40) [-40|150] "Deg C"  ABS
+ SG_ RefrgModeActual : 309|5@0+ (1,0) [0|31] ""  ABS
+ SG_ SolarLoad : 271|7@0+ (10,0) [0|1270] "W"  ABS
+
+BO_ 1430 ELEC_CAN_NodeABS_NM: 8 ABS
+ SG_ ELEC_CAN_ABS_NM_PDU : 7|64@0+ (1,0) [0|0] ""  BCMA
+
+BO_ 1438 ELEC_CAN_NodeBCMA_NM: 8 BCMA
+ SG_ ELEC_CAN_BCMA_NM_PDU : 7|64@0+ (1,0) [0|0] ""  ABS,INV,INVA,INVB,INVD,PCM,PCMB,TCM
+
+BO_ 1526 ELEC_CAN_NodeINV_NM: 8 INV
+ SG_ ELEC_CAN_INV_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 1437 ELEC_CAN_NodeINVA_NM: 8 INVA
+ SG_ ELEC_CAN_INVA_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 1454 ELEC_CAN_NodeINVB_NM: 8 INVB
+ SG_ ELEC_CAN_INVB_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 1481 ELEC_CAN_NodeINVD_NM: 8 INVD
+ SG_ ELEC_CAN_INVD_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 1429 ELEC_CAN_NodePCM_NM: 8 PCM
+ SG_ ELEC_CAN_PCM_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 1433 ELEC_CAN_NodePCMB_NM: 8 PCMB
+ SG_ ELEC_CAN_PCMB_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 1440 ELEC_CAN_NodeTCM_NM: 8 TCM
+ SG_ ELEC_CAN_TCM_NM_PDU : 7|64@0+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 24 EVC_ABS_ASP1_EC: 8 ABS
+ SG_ AuthDataTargetABS : 0|64@1+ (1,0) [0|1.84467440737096E+019] ""  BCMA
+
+BO_ 77 EVC_ABS_PR10_EC_10ms: 64 ABS
+ SG_ BrakeOverrideAccelerator : 14|1@0+ (1,0) [0|1] ""  PCM,TCM
+ SG_ PedalPosProExt : 20|13@0+ (0.02,0) [0|100] "%"  PCM,TCM
+ SG_ PedalPosProExtGpAC : 11|4@0+ (1,0) [0|15] "Counter value"  PCM,TCM
+ SG_ PedalPosProExtGpCS : 7|8@0+ (1,0) [0|255] "checksum"  PCM,TCM
+ SG_ PedalPosProExtQF : 13|2@0+ (1,0) [0|3] ""  PCM,TCM
+
