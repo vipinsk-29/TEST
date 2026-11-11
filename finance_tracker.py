@@ -1,7 +1,8 @@
-"""Personal finance tracker (Python 3.11+ and Tkinter).
+"""Personal finance tracker (Python 3.9+ and Tkinter).
 
 Run: python finance_tracker.py
 Optional dependencies: python -m pip install cryptography reportlab
+Encrypted databases require Python 3.11+ with SQLite serialization support.
 Run beside an existing expenses.db to migrate it without deleting its records.
 All accounts use one currency. Transfers preserve total bank balance; savings
 contributions reduce bank balances but are not everyday spending. Loan schedules
@@ -151,13 +152,46 @@ class Store:
             self.lock_handle.close()
             raise RuntimeError("This database is already open in another tracker.") from None
 
+    @staticmethod
+    def require_encryption_support():
+        if not (hasattr(sqlite3.Connection, "serialize") and
+                hasattr(sqlite3.Connection, "deserialize")):
+            raise RuntimeError("Encrypted databases require Python 3.11+ with SQLite serialization support. "
+                               "Upgrade Python to open or create encrypted databases.")
+
+    def database_bytes(self):
+        if hasattr(self.db, "serialize"):
+            return self.db.serialize()
+        if self.password:
+            self.require_encryption_support()
+        # Older Python lacks SQLite serialization; only plaintext databases use
+        # this temporary file. Encrypted databases must never take this path.
+        with tempfile.TemporaryDirectory(prefix="finance-tracker-") as directory:
+            path = Path(directory) / "snapshot.db"
+            target = sqlite3.connect(str(path))
+            try:
+                self.db.backup(target)
+            finally:
+                target.close()
+            return path.read_bytes()
+
     def connect(self, raw=None):
         db = sqlite3.connect(":memory:")
         try:
             if raw is not None:
                 if not raw.startswith(SQLITE_MAGIC):
                     raise ValueError("Not a finance SQLite database.")
-                db.deserialize(raw)
+                if hasattr(db, "deserialize"):
+                    db.deserialize(raw)
+                else:
+                    with tempfile.TemporaryDirectory(prefix="finance-tracker-") as directory:
+                        path = Path(directory) / "restore.db"
+                        path.write_bytes(raw)
+                        source = sqlite3.connect(str(path))
+                        try:
+                            source.backup(db)
+                        finally:
+                            source.close()
             db.row_factory = sqlite3.Row
             db.execute("PRAGMA foreign_keys=ON")
             if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
@@ -171,6 +205,7 @@ class Store:
         if self.path.exists():
             raw = self.path.read_bytes()
             if raw.startswith(MAGIC):
+                self.require_encryption_support()
                 if not password:
                     raise ValueError("A password is required.")
                 self.db = self.connect(unseal(raw, password))
@@ -203,18 +238,25 @@ class Store:
 
     @contextmanager
     def change(self):
-        before = self.db.serialize()
+        before = sqlite3.connect(":memory:")
+        self.db.backup(before)
         try:
             with self.db:
                 yield self.db
             self.persist()
         except Exception:
-            self.db.deserialize(before)
+            self.db.close()
+            self.db = before
+            before = None
+            self.db.row_factory = sqlite3.Row
             self.db.execute("PRAGMA foreign_keys=ON")
             raise
+        finally:
+            if before is not None:
+                before.close()
 
     def persist(self):
-        raw = self.db.serialize()
+        raw = self.database_bytes()
         atomic_write(self.path, seal(raw, self.password) if self.password else raw)
 
     def backup(self, daily=False):
@@ -227,7 +269,7 @@ class Store:
         stamp = datetime.now().strftime("%Y-%m-%d_%H%M%S_%f")
         target = folder / (stamp + ".bak")
         if self.db is not None:
-            raw = self.db.serialize()
+            raw = self.database_bytes()
             raw = seal(raw, self.password) if self.password else raw
         else:
             raw = self.path.read_bytes()
@@ -409,6 +451,8 @@ class Store:
 
     def replace(self, source, password=None):
         raw = Path(source).read_bytes()
+        if raw.startswith(MAGIC):
+            self.require_encryption_support()
         restored = self.connect(unseal(raw, password or "") if raw.startswith(MAGIC) else raw)
         required = {"accounts", "categories", "transactions"}
         names = {row[0] for row in restored.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -457,6 +501,8 @@ class FinanceTracker:
 
     def open_database(self):
         encrypted = self.store.path.exists() and self.store.path.read_bytes().startswith(MAGIC)
+        if encrypted:
+            self.store.require_encryption_support()
         while True:
             password = simpledialog.askstring("Unlock database", "Database password:", show="*", parent=self.root) if encrypted else None
             if encrypted and password is None:
@@ -1286,8 +1332,7 @@ class FinanceTracker:
 
     def encrypt(self):
         crypto()
-        if not hasattr(self.store.db, "serialize"):
-            raise RuntimeError("Encryption requires Python 3.11+ with SQLite serialization.")
+        self.store.require_encryption_support()
         password = simpledialog.askstring("Encryption", "New password (at least 12 characters):", show="*", parent=self.root)
         if password is None:
             return
