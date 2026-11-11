@@ -9,6 +9,8 @@ contributions reduce bank balances but are not everyday spending. Loan schedules
 are estimates, not lender statements. Loan registration does not create cash.
 Recurring items require individual review; CSV suggestions must be reviewed.
 Backups are retained beside the database. CSV/PDF exports are unencrypted.
+The dashboard's spending chart groups subsections under their parent section;
+it excludes savings, income and transfers and includes archived sections.
 """
 import calendar
 import csv
@@ -24,7 +26,7 @@ import tkinter as tk
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from decimal import Decimal, DecimalException, InvalidOperation, ROUND_HALF_UP
-from tkinter import filedialog, messagebox, simpledialog, ttk
+from tkinter import filedialog, font, messagebox, simpledialog, ttk
 
 DB_FILE = Path("expenses.db")
 MAGIC = b"FINANCE1"
@@ -569,9 +571,28 @@ class FinanceTracker:
         ttk.Button(line, text="Review due items", command=self.safe(self.review_due)).pack(side="left", padx=6)
         self.dashboard_text = tk.Text(self.dashboard, height=16, wrap="word", state="disabled")
         self.dashboard_text.pack(fill="x", pady=10)
-        self.chart = tk.Canvas(self.dashboard, height=260, background="white")
+        charts = ttk.Frame(self.dashboard)
+        charts.pack(fill="both", expand=True)
+        charts.columnconfigure(0, weight=1, uniform="charts")
+        charts.columnconfigure(1, weight=1, uniform="charts")
+        charts.rowconfigure(0, weight=1)
+        overview = ttk.LabelFrame(charts, text="Monthly overview")
+        overview.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        breakdown = ttk.LabelFrame(charts, text="Spending by section (includes subsections)")
+        breakdown.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        breakdown.columnconfigure(0, weight=1)
+        breakdown.rowconfigure(0, weight=1)
+        self.chart = tk.Canvas(overview, height=260, background="white")
         self.chart.pack(fill="both", expand=True)
         self.chart.bind("<Configure>", lambda _event: self.draw_chart())
+        self.spending_chart = tk.Canvas(breakdown, height=260, background="white")
+        vertical = ttk.Scrollbar(breakdown, orient="vertical", command=self.spending_chart.yview)
+        horizontal = ttk.Scrollbar(breakdown, orient="horizontal", command=self.spending_chart.xview)
+        self.spending_chart.configure(yscrollcommand=vertical.set, xscrollcommand=horizontal.set)
+        self.spending_chart.grid(row=0, column=0, sticky="nsew")
+        vertical.grid(row=0, column=1, sticky="ns")
+        horizontal.grid(row=1, column=0, sticky="ew")
+        self.spending_chart.bind("<Configure>", lambda _event: self.draw_spending_chart())
         self.page("Transactions", ("date", "type", "description", "section", "account", "amount", "principal", "interest"),
                   [("Add", self.transaction), ("Edit", lambda: self.transaction(self.selected("Transactions"))),
                    ("Delete", lambda: self.delete("Transactions", "transactions")),
@@ -1040,6 +1061,17 @@ class FinanceTracker:
               COALESCE(SUM(CASE WHEN t.kind='Expense' AND c.bucket='Savings' THEN t.amount ELSE 0 END),0)
             FROM transactions t LEFT JOIN categories c ON c.id=t.category_id WHERE substr(t.date,1,7)=?""", (month,)).fetchone()
 
+    def spending_by_section(self, month):
+        return self.store.rows("""
+            SELECT COALESCE(p.name, c.name, 'Uncategorized') AS name, SUM(t.amount) AS total
+            FROM transactions t
+            LEFT JOIN categories c ON c.id=t.category_id
+            LEFT JOIN categories p ON p.id=c.parent_id
+            WHERE t.kind='Expense' AND COALESCE(c.bucket,'Spending')='Spending'
+              AND substr(t.date,1,7)=?
+            GROUP BY COALESCE(c.parent_id,c.id)
+            ORDER BY total DESC, name COLLATE NOCASE""", (month,))
+
     def budget_rows(self):
         result = []
         for budget in self.store.rows("SELECT b.*,c.name FROM budgets b JOIN categories c ON c.id=b.category_id ORDER BY month DESC,c.name"):
@@ -1123,6 +1155,7 @@ class FinanceTracker:
         self.dashboard_text.insert("1.0", "\n".join(lines))
         self.dashboard_text.configure(state="disabled")
         self.draw_chart()
+        self.draw_spending_chart()
 
     def draw_chart(self):
         if not self.store.db:
@@ -1141,6 +1174,34 @@ class FinanceTracker:
             self.chart.create_rectangle(x, height-40-bar_height, x+(width-100)/4, height-40, fill=color, outline="")
             self.chart.create_text(x, height-23, text=label, anchor="w")
             self.chart.create_text(x, height-52-bar_height, text=money(value), anchor="w")
+
+    def draw_spending_chart(self):
+        if not self.store.db:
+            return
+        try:
+            self.validate_month(self.month.get())
+        except ValueError:
+            return
+        canvas = self.spending_chart
+        canvas.delete("all")
+        rows = self.spending_by_section(self.month.get())
+        if not rows:
+            canvas.create_text(15, 20, text="No spending in this month.", anchor="w")
+            canvas.configure(scrollregion=(0, 0, canvas.winfo_width(), canvas.winfo_height()))
+            return
+        text_font = font.nametofont("TkDefaultFont")
+        label_width = max(text_font.measure(row["name"]) for row in rows) + 25
+        value_width = max(text_font.measure(money(row["total"])) for row in rows) + 20
+        width = max(canvas.winfo_width(), label_width + value_width + 150)
+        bar_width = width - label_width - value_width - 20
+        maximum = max(row["total"] for row in rows)
+        for index, row in enumerate(rows):
+            y = 20 + index * 36
+            canvas.create_text(10, y, text=row["name"], anchor="w")
+            canvas.create_rectangle(label_width, y-9, label_width + bar_width * row["total"] / maximum,
+                                    y+9, fill="#cc5555", outline="")
+            canvas.create_text(label_width + bar_width + 10, y, text=money(row["total"]), anchor="w")
+        canvas.configure(scrollregion=(0, 0, width, max(canvas.winfo_height(), 40 + len(rows) * 36)))
 
     def text_window(self, title, text):
         win = tk.Toplevel(self.root)
@@ -1384,6 +1445,7 @@ class FinanceTracker:
         self.dashboard_text.delete("1.0", "end")
         self.dashboard_text.configure(state="disabled")
         self.chart.delete("all")
+        self.spending_chart.delete("all")
         self.root.withdraw()
         gate = tk.Toplevel(self.root)
         gate.title("Finance tracker locked")
